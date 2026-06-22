@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: products-mysql
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: products_db
+      MYSQL_USER: products_user
+      MYSQL_PASSWORD: products_password
+
+    command: --default-authentication-plugin=mysql_native_password
+
+    ports:
+      - "3308:3306"
+
+    volumes:
+      - products_db_data:/var/lib/mysql
+      - ./src/main/resources/db:/docker-entrypoint-initdb.d
+
+    networks:
+      - products-net
+
+volumes:
+  products_db_data:
+    name: products_mysql_data
+
+networks:
+  products-net:
+    driver: bridge
