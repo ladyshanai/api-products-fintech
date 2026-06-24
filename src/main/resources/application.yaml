@@ -1,38 +1,9 @@
 spring:
   application:
     name: products-service
-
-  datasource:
-    url: jdbc:mysql://localhost:3308/products_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: products_user
-    password: products_password
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQLDialect
-        format_sql: true
-        use_sql_comments: true
-    show-sql: true
-
-# Configuración de Swagger/OpenAPI
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-    enabled: true
-  api-docs:
-    path: /v3/api-docs
+  config:
+    import: optional:configserver:http://localhost:8888
 
 server:
   port: 8082
 
-account-service:
-  account-service-url: http://localhost:8080
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka
