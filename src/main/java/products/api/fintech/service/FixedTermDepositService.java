@@ -7,6 +7,7 @@ import products.api.fintech.entity.FixedTermDepositEntity;
 import products.api.fintech.enums.FixedTermDepositStatus;
 import products.api.fintech.repository.FixedTermDepositRepository;
 import org.springframework.stereotype.Service;
+import products.api.fintech.mapper.FixedTermDepositMapper;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,13 +20,16 @@ public class FixedTermDepositService {
 
     private final FixedTermDepositRepository fixedTermDepositRepository;
     private final AccountClient accountClient;
+    private final FixedTermDepositMapper fixedTermDepositMapper;
 
     public FixedTermDepositService(
             FixedTermDepositRepository fixedTermDepositRepository,
-            AccountClient accountClient
+            AccountClient accountClient,
+            FixedTermDepositMapper fixedTermDepositMapper
     ) {
         this.fixedTermDepositRepository = fixedTermDepositRepository;
         this.accountClient = accountClient;
+        this.fixedTermDepositMapper = fixedTermDepositMapper;
     }
 
     public FixedTermDepositResponse createFixedTermDeposit(FixedTermDepositRequest request) {
@@ -39,7 +43,7 @@ public class FixedTermDepositService {
                 request.termInDays()
         );
 
-        var entity = new FixedTermDepositEntity();
+        var entity = fixedTermDepositMapper.toEntity(request);
         entity.setAccountId(account.accountId());
         entity.setAmount(request.amount());
         entity.setTermInDays(request.termInDays());
@@ -54,13 +58,13 @@ public class FixedTermDepositService {
 
         var saved = fixedTermDepositRepository.save(entity);
 
-        return mapToResponse(saved);
+        return fixedTermDepositMapper.toResponse(saved);
     }
 
     public List<FixedTermDepositResponse> getAllFixedTermDeposits() {
         return fixedTermDepositRepository.findAll()
                 .stream()
-                .map(this::mapToResponse)
+                .map(fixedTermDepositMapper::toResponse)
                 .toList();
     }
 
@@ -68,20 +72,20 @@ public class FixedTermDepositService {
         var entity = fixedTermDepositRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Fixed term deposit not found with id: " + id));
 
-        return mapToResponse(entity);
+        return fixedTermDepositMapper.toResponse(entity);
     }
 
     public List<FixedTermDepositResponse> getFixedTermDepositsByAccount(Long accountId) {
         return fixedTermDepositRepository.findByAccountId(accountId)
                 .stream()
-                .map(this::mapToResponse)
+                .map(fixedTermDepositMapper::toResponse)
                 .toList();
     }
 
     public List<FixedTermDepositResponse> getFixedTermDepositsByStatus(FixedTermDepositStatus status) {
         return fixedTermDepositRepository.findByStatus(status)
                 .stream()
-                .map(this::mapToResponse)
+                .map(fixedTermDepositMapper::toResponse)
                 .toList();
     }
 
@@ -95,7 +99,7 @@ public class FixedTermDepositService {
 
         var updated = fixedTermDepositRepository.save(entity);
 
-        return mapToResponse(updated);
+        return fixedTermDepositMapper.toResponse(updated);
     }
 
     public void deleteById(Long id) {
@@ -103,23 +107,6 @@ public class FixedTermDepositService {
                 .orElseThrow(() -> new RuntimeException("Fixed term deposit not found with id: " + id));
 
         fixedTermDepositRepository.delete(entity);
-    }
-
-    private FixedTermDepositResponse mapToResponse(FixedTermDepositEntity entity) {
-        return new FixedTermDepositResponse(
-                entity.getId(),
-                entity.getAccountId(),
-                entity.getAmount(),
-                entity.getTermInDays(),
-                entity.getAnnualInterestRate(),
-                entity.getExpectedReturn(),
-                entity.getStartDate(),
-                entity.getMaturityDate(),
-                entity.getStatus(),
-                entity.getActive(),
-                entity.getCreatedAt(),
-                entity.getUpdatedAt()
-        );
     }
 
     private BigDecimal calculateExpectedReturn(

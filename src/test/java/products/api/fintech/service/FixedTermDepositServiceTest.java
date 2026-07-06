@@ -11,6 +11,7 @@ import products.api.fintech.client.AccountModel;
 import products.api.fintech.dto.FixedTermDepositRequest;
 import products.api.fintech.entity.FixedTermDepositEntity;
 import products.api.fintech.enums.FixedTermDepositStatus;
+import products.api.fintech.mapper.FixedTermDepositMapper;
 import products.api.fintech.repository.FixedTermDepositRepository;
 
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import org.mapstruct.factory.Mappers;
 
 @ExtendWith(MockitoExtension.class)
 class FixedTermDepositServiceTest {
@@ -30,13 +32,17 @@ class FixedTermDepositServiceTest {
     @Mock
     private AccountClient accountClient;
 
-    @InjectMocks
+    private FixedTermDepositMapper fixedTermDepositMapper;
+
     private FixedTermDepositService service;
 
     private AccountModel account;
 
     @BeforeEach
     void setUp() {
+        fixedTermDepositMapper = Mappers.getMapper(FixedTermDepositMapper.class);
+        service = new FixedTermDepositService(repository, accountClient, fixedTermDepositMapper);
+
         account = new AccountModel(
                 1L,
                 1L,
